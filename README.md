@@ -25,15 +25,19 @@ $ kubectl reveal secret --help
       kubectl reveal secret SECRET_NAME [optional flags]
 
   Options:
-      -n, --namespace   specify secrets by key=value format
+      -n, --namespace    If present, the namespace scope for this CLI request
+      --context          The name of the kubeconfig context to use
+      -h, --help         Show the usage of this CLI
 
   Examples:
-
     # Reveal Secret data in the current namespace.
     $ kubectl reveal secret my-secret
 
     # Reveal Secret data in the specified namespace.
     $ kubectl reveal secret my-secret -n my-namespace
+
+    # Reveal Secret data in the specified context and namespace.
+    $ kubectl reveal secret my-secret --context my-context -n my-namespace
 
 ```
 
