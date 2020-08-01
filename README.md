@@ -36,3 +36,21 @@ $ kubectl reveal secret --help
     $ kubectl reveal secret my-secret -n my-namespace
 
 ```
+
+## Examples
+
+```
+$ value=$(echo -n 'hello' | base64)
+$ cat secret.yaml <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque
+data:
+  key: $value
+EOF
+$ kubectl apply -f secret.yaml
+$ kubectl reveal secret
+key     hello
+```
