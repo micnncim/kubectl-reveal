@@ -9,7 +9,7 @@
 
 ## Installation
 
-```
+```console
 $ git clone git@github.com:micnncim/kubectl-reveal-secret.git
 $ cp kubectl-reveal-secret/kubectl-reveal-secret /usr/local/bin
 ```
@@ -17,9 +17,22 @@ $ cp kubectl-reveal-secret/kubectl-reveal-secret /usr/local/bin
 ## Usage
 
 ```console
-# Reveal Secret data in the current namespace.
-$ kubectl reveal secret my-secret
+$ kubectl reveal secret --help
 
-# Reveal Secret data in the specified namespace.
-$ kubectl reveal secret my-secret -n my-namespace
+  kubectl-reveal-secret reveals Kubernetes Secret data.
+
+  Usage:
+      kubectl reveal secret SECRET_NAME [optional flags]
+
+  Options:
+      -n, --namespace   specify secrets by key=value format
+
+  Examples:
+
+    # Reveal Secret data in the current namespace.
+    $ kubectl reveal secret my-secret
+
+    # Reveal Secret data in the specified namespace.
+    $ kubectl reveal secret my-secret -n my-namespace
+
 ```
