@@ -41,7 +41,7 @@ $ kubectl reveal secret --help
 
 ```
 $ value=$(echo -n 'hello' | base64)
-$ cat secret.yaml <<EOF
+$ cat > secret.yaml <<EOF
 apiVersion: v1
 kind: Secret
 metadata:
