@@ -44,17 +44,7 @@ $ kubectl reveal secret --help
 ## Examples
 
 ```
-$ value=$(echo -n 'hello' | base64)
-$ cat > secret.yaml <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-type: Opaque
-data:
-  key: $value
-EOF
-$ kubectl apply -f secret.yaml
+$ kubectl create secret generic my-secret --from-literal key=value
 $ kubectl reveal secret
 key     hello
 ```
