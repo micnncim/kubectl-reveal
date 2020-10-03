@@ -1,6 +1,6 @@
 # kubectl-reveal-secret
 
-`kubectl-reveal-secret` is a kubectl plugin that reveals Kubernetes Secret data to allow you see raw data.
+`kubectl-reveal-secret` is a kubectl plugin that reveals Kubernetes Secret data to allow you to see raw data.
 
 ## Requirements
 
