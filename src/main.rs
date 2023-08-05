@@ -1,10 +1,11 @@
+mod k8s;
+
 use clap::{Command, CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
 use std::io;
 use std::str;
 
-use k8s_openapi::api::core::v1::Secret;
-use kube::{api::Api, Client};
+use k8s::Client;
 
 #[derive(Debug, Parser)]
 #[command(name = "kubectl-reveal")]
@@ -48,14 +49,11 @@ fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    let ns = cli.namespace.as_deref().unwrap_or("default");
+    let client = Client::new(cli.context, cli.namespace).await?;
 
     match cli.command {
         Commands::Secret { secret } => {
-            let client = Client::try_default().await?;
-
-            let secrets: Api<Secret> = Api::namespaced(client, ns);
-            match secrets.get(&secret).await {
+            match client.get_secret(&secret).await {
                 Ok(secret) => {
                     if let Some(data) = secret.data {
                         for (key, value) in data {
@@ -67,15 +65,14 @@ async fn main() -> anyhow::Result<()> {
                 }
                 Err(e) => {
                     eprintln!("Failed to get secret: {:?}", e);
+                    return Err(e);
                 }
             }
-
             Ok(())
         }
         Commands::Completion { shell } => {
             let mut cmd = Cli::command();
             print_completions(shell, &mut cmd);
-
             Ok(())
         }
     }
