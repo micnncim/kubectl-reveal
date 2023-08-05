@@ -32,7 +32,7 @@ jobs:
         run: nix develop -c cargo clippy --all -- --deny warnings
 
       - name: Run cargo check
-        run: nix develop -c cargo check --all
+        run: nix develop -c cargo check --all --locked
 
       - name: Run cargo build
         run: nix develop -c cargo build --all
