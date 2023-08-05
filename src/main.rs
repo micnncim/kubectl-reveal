@@ -7,13 +7,27 @@ use std::str;
 
 use k8s::Client;
 
-#[derive(Debug, Parser)]
-#[command(name = "kubectl-reveal")]
-#[command(version)]
-#[command(about = "Reveals Kubernetes Secret data", long_about = None)]
-struct Cli {
+#[derive(Parser)]
+#[command(name = "kubectl", bin_name = "kubectl")]
+enum Kubectl {
+    Reveal(Reveal),
+}
+
+#[derive(Parser)]
+#[command(
+    bin_name = "kubectl reveal",
+    version,
+    about,
+    long_about = None,
+    after_help = "Examples:
+    kubectl reveal secret my-secret
+    kubectl reveal secret my-secret -n my-namespace
+    kubectl reveal secret my-secret -n my-namespace --context my-context
+    "
+)]
+struct Reveal {
     #[command(subcommand)]
-    command: Commands,
+    command: RevealCommand,
 
     /// The namespace to target
     #[arg(short = 'n', long = "namespace", global = true)]
@@ -25,7 +39,7 @@ struct Cli {
 }
 
 #[derive(Debug, Subcommand)]
-enum Commands {
+enum RevealCommand {
     /// Reveals secrets
     #[command(arg_required_else_help = true)]
     Secret {
@@ -47,11 +61,11 @@ fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let cli = Cli::parse();
+    let reveal = Reveal::parse();
 
-    match cli.command {
-        Commands::Secret { secret } => {
-            let client = Client::new(cli.context, cli.namespace).await?;
+    match reveal.command {
+        RevealCommand::Secret { secret } => {
+            let client = Client::new(reveal.context, reveal.namespace).await?;
 
             match client.get_secret(&secret).await {
                 Ok(secret) => {
@@ -72,8 +86,9 @@ async fn main() -> anyhow::Result<()> {
             Ok(())
         }
 
-        Commands::Completion { shell } => {
-            let mut cmd = Cli::command();
+        RevealCommand::Completion { shell } => {
+            // Kubectl is specified to generate completion for `kubectl reveal`.
+            let mut cmd = Kubectl::command();
             print_completions(shell, &mut cmd);
 
             Ok(())
