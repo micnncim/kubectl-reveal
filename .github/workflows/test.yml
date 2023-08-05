@@ -1,0 +1,41 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+
+      - name: Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
+      - name: Run cargo fmt
+        run: nix develop -c cargo fmt --all -- --check
+
+      - name: Run cargo clippy
+        run: nix develop -c cargo clippy --all -- --deny warnings
+
+      - name: Run cargo check
+        run: nix develop -c cargo check --all
+
+      - name: Run cargo build
+        run: nix develop -c cargo build --all
+
+      - name: Run cargo test
+        run: nix develop -c cargo test --all
