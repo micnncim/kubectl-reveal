@@ -49,10 +49,10 @@ fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    let client = Client::new(cli.context, cli.namespace).await?;
-
     match cli.command {
         Commands::Secret { secret } => {
+            let client = Client::new(cli.context, cli.namespace).await?;
+
             match client.get_secret(&secret).await {
                 Ok(secret) => {
                     if let Some(data) = secret.data {
@@ -68,11 +68,14 @@ async fn main() -> anyhow::Result<()> {
                     return Err(e);
                 }
             }
+
             Ok(())
         }
+
         Commands::Completion { shell } => {
             let mut cmd = Cli::command();
             print_completions(shell, &mut cmd);
+
             Ok(())
         }
     }
