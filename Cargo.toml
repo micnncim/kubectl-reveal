@@ -4,6 +4,10 @@ version = "0.3.2"
 description = "A kubectl plugin to reveal Kubernetes secrets"
 edition = "2021"
 
+[[bin]]
+name = "kubectl-reveal"
+path = "src/bin/main.rs"
+
 [dependencies]
 clap = { version = "4.3.19", features = ["derive"] }
 kube = { version = "0.84.0", features = ["runtime", "derive"] }
