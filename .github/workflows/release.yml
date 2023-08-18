@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build:
+    name: build
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      BIN: kubectl-reap
+      VERSION: ''
+      CARGO: cargo
+      TARGET_FLAGS: ''
+      TARGET_DIR: ./target
+      RUST_BACKTRACE: 1
+      ASSET: ''
+
+    strategy:
+      matrix:
+        platform: [linux-x86_64, linux-arm, macos-x86_64]
+        include:
+          - platform: linux-x86_64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - platform: linux-arm
+            os: ubuntu-22.04
+            target: arm-unknown-linux-gnueabihf
+          - platform: macos-x86_64
+            os: macos-13
+            target: x86_64-apple-darwin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+
+      - name: Cache Nix
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
+      - name: Set up Rust toolchain
+        run: |
+          nix develop .#ci -c rustup target add ${{ matrix.target }}
+
+      - name: Set up env vars
+        run: |
+          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "CARGO=cross" >> $GITHUB_ENV
+          echo "TARGET_FLAGS=--target ${{ matrix.target }}" >> $GITHUB_ENV
+          echo "TARGET_DIR=./target/${{ matrix.target }}" >> $GITHUB_ENV
+          echo "ASSET="${{ env.BIN }}-${{ env.VERSION }}-${{ matrix.target }}"" >> $GITHUB_ENV
+
+      - name: Build release binary
+        shell: bash
+        run: |
+          export CROSS_CUSTOM_TOOLCHAIN=1
+
+          # nix develop .#ci -c sh -c "${{ env.CARGO }} build --verbose --release ${{ env.TARGET_FLAGS }}"
+          nix --verbose build ".#${{ matrix.platform }}"
+
+      - name: Build archive
+        run: |
+          cp README.md LICENSE ${{ env.ASSET }}
+          cp "target/${{ matrix.target }}/release/${{ env.BIN }}" ${{ env.ASSET }}
+
+          tar czvf "${{ env.ASSET }}.tar.gz" ${{ env.ASSET }}
+
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: ${{ env.ASSET }}.tar.gz
+
+  release:
+    name: Release
+
+    runs-on: ubuntu-22.04
+
+    needs: [ build ]
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.tar.gz
+          generate_release_notes: true

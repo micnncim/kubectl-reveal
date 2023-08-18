@@ -52,6 +52,17 @@
 
         kubectl-reveal = craneLib.buildPackage { inherit cargoArtifacts src buildInputs; };
 
+        crossBuild = target: craneLib.buildPackage {
+          inherit cargoArtifacts src buildInputs;
+          cargoBuildCommand = ''
+            export CARGO_HOME=$TMPDIR/cargo && \
+            export RUSTUP_HOME=$TMPDIR/rustup && \
+            export CROSS_CUSTOM_TOOLCHAIN=1 && \
+            ${pkgs.rustup}/bin/rustup target add ${target} && \
+            ${pkgs.cargo-cross}/bin/cross build --release --locked --target ${target}
+          '';
+        };
+
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       in
       with pkgs;
@@ -79,18 +90,36 @@
 
         packages = {
           inherit kubectl-reveal;
+
           default = kubectl-reveal;
+
+          linux-x86_64 = crossBuild "x86_64-unknown-linux-gnu";
+          linux-arm = crossBuild "arm-unknown-linux-gnueabihf";
+          macos-x86_64 = crossBuild "x86_64-apple-darwin";
         };
 
         apps.default = flake-utils.lib.mkApp { drv = kubectl-reveal; };
 
-        devShells.default = mkShell {
-          buildInputs = buildInputs
-            ++ (with pkgs; [
-            rustToolchain
-          ]);
+        devShells = {
+          default = mkShell {
+            buildInputs = buildInputs ++ [
+              rustToolchain
+            ];
 
-          RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/src";
+            RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/src";
+          };
+
+          ci = mkShell {
+            buildInputs = buildInputs ++ [
+              cargo-cross
+              rustup
+            ];
+
+            shellHook = ''
+              export OPENSSL_DIR="${openssl.dev}";
+              export PKG_CONFIG_PATH="${openssl.dev}/lib/pkgconfig"
+            '';
+          };
         };
       }
     );
