@@ -6,10 +6,19 @@
 
     crane = {
       url = "github:ipetkov/crane";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
     };
 
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
 
     advisory-db = {
       url = "github:rustsec/advisory-db";
@@ -28,8 +37,8 @@
         buildInputs = with pkgs; [
           openssl
           pkg-config
-        ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
-          pkgs.libiconv
+        ] ++ lib.optionals stdenv.isDarwin [
+          libiconv
         ];
 
         craneLib = crane.lib.${system};
