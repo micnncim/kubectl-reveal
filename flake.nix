@@ -85,10 +85,9 @@
         apps.default = flake-utils.lib.mkApp { drv = kubectl-reveal; };
 
         devShells.default = mkShell {
-          buildInputs = buildInputs
-            ++ (with pkgs; [
+          buildInputs = buildInputs ++ [
             rustToolchain
-          ]);
+          ];
 
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/src";
         };
