@@ -52,12 +52,7 @@
 
         kubectl-reveal = craneLib.buildPackage { inherit cargoArtifacts src buildInputs; };
 
-        rustToolchain = pkgs.rust-bin.beta.latest.default.override {
-          extensions = [
-            "rust-src"
-            "rust-analyzer"
-          ];
-        };
+        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       in
       with pkgs;
       {
