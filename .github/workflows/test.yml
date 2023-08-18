@@ -25,17 +25,8 @@ jobs:
       - name: Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
 
-      - name: Run cargo fmt
-        run: nix develop -c cargo fmt --all -- --check
+      - name: Build
+        run: nix build
 
-      - name: Run cargo clippy
-        run: nix develop -c cargo clippy --all -- --deny warnings
-
-      - name: Run cargo check
-        run: nix develop -c cargo check --all --locked
-
-      - name: Run cargo build
-        run: nix develop -c cargo build --all
-
-      - name: Run cargo test
-        run: nix develop -c cargo test --all
+      - name: Test
+        run: nix flake check --no-build
